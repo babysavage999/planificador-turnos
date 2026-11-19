@@ -14,7 +14,7 @@ def generate_schedule(employees, days, shifts, min_staff, unavailable,
     # 1. Minimum staff required per shift
     for d in days:
         for s in shifts:
-            model.Add(sum(x[e, d, s] for e in employees) >= min_staff[(d, s)])
+            model.Add(sum(x[e, d, s] for e in employees) == min_staff[(d, s)])
 
     # 2. At most one shift per day for each employee
     for e in employees:
@@ -46,7 +46,7 @@ def generate_schedule(employees, days, shifts, min_staff, unavailable,
         model.Add(load <= max_load)
         model.Add(load >= min_load)
     total_assigned = sum(x.values())
-    model.Minimize(100 * total_assigned + (max_load - min_load))
+    model.Minimize(max_load - min_load)
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = time_limit
@@ -64,4 +64,5 @@ def generate_schedule(employees, days, shifts, min_staff, unavailable,
         "schedule": schedule,
         "load_gap": solver.Value(max_load) - solver.Value(min_load),
         "solve_time_s": solver.WallTime(),
+        "status": solver.StatusName(status),
     }
